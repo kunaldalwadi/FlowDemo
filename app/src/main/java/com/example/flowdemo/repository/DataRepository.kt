@@ -35,8 +35,7 @@ class DataRepository(
         return withContext(Dispatchers.IO) {
             flow {
                 try {
-                    emit(Result.Loading)
-//                    emit(Result.Success(ApiClient.apiService.getPosts()))
+                    emit(Result.Success(ApiClient.apiService.getPosts()))
                 } catch (e: Exception) {
                     emit(Result.Error(Exception("Network was not really responding !!")))
                 }

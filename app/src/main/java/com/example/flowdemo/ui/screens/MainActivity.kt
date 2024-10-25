@@ -1,6 +1,7 @@
 package com.example.flowdemo.ui.screens
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,12 +30,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.flowdemo.data.Post
 import com.example.flowdemo.repository.DataRepository
 import com.example.flowdemo.ui.theme.FlowDemoTheme
 import com.example.flowdemo.ui.viewmodels.MainViewModel
 import com.example.flowdemo.ui.viewmodels.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
+
+private val TAG = MainActivity::class.java.simpleName
 
 class MainActivity : ComponentActivity() {
 
@@ -72,18 +76,30 @@ fun Greeting(
     Box(
         modifier = modifier
             .fillMaxSize()
-        //.verticalScroll(rememberScrollState())
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+            modifier = modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
+            Button(
+                onClick = {
+//                    mainViewModel.getDataFromInternet()
+                    mainViewModel.getDataFlowFromInternet()
+                }
+            ) {
+                Text(text = "getDataFromInternet()")
+            }
             val postsList = mainViewModel.data.collectAsState().value
             val error = mainViewModel.error.collectAsState().value
-            if (! postsList.isEmpty() || (error == null || error.isEmpty())) {
+
+            if (error == null && postsList.isNotEmpty()) {
                 LazyColumn(
-                    modifier = Modifier.height(300.dp).width(250.dp)
+                    modifier = Modifier
+                        .height(300.dp)
+                        .width(250.dp)
                 ) {
                     items(postsList) { post ->
                         PostListItemView(
@@ -92,26 +108,29 @@ fun Greeting(
                         )
                     }
                 }
-            } else {
+            }
+            if (mainViewModel.postData.collectAsState().value.toString() != "null") {
                 Text(
-                    text = mainViewModel.error.collectAsState().value.toString()
+                    text = mainViewModel.postData.collectAsState().value.toString()
                 )
             }
             Text(
-                text = mainViewModel.postData.collectAsState().value.toString()
+                text = "Hello $name!",
+                modifier = modifier
             )
-//            Text(
-//                text = "Hello $name!",
-//                modifier = modifier
-//            )
-//            Text(
-//                text = "Count Down Timer : ${mainViewModel.countDownTimerDemo.collectAsState(999).value}",
-//                modifier = modifier
-//            )
-//            Text(
-//                text = "Count Counter : ${mainViewModel.count.collectAsState().value}",
-//                modifier = modifier
-//            )
+            Text(
+                //Dont know how to use the initialValue here.
+                text = "Count Down Timer : ${
+                    mainViewModel.countDownTimerDemo.collectAsStateWithLifecycle(
+                        25
+                    ).value
+                }",
+                modifier = modifier
+            )
+            Text(
+                text = "Count Counter : ${mainViewModel.count.collectAsState().value}",
+                modifier = modifier
+            )
             Button(
                 onClick = { mainViewModel.updateCount() },
                 modifier = modifier
@@ -129,14 +148,6 @@ fun Greeting(
                 onClick = { mainViewModel.toggleProgress() }
             ) {
                 Text(text = "Show/Hide Progress")
-            }
-            Button(
-                onClick = {
-//                    mainViewModel.getDataFromInternet()
-                    mainViewModel.getDataFlowFromInternet()
-                }
-            ) {
-                Text(text = "getDataFromInternet()")
             }
             Button(
                 onClick = {

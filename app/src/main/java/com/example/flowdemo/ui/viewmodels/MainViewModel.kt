@@ -36,7 +36,7 @@ class MainViewModel(
 
     //when you create a flow using a builder,
     //you will have to give an initial value when you call it in MainActivity.
-    val countDownTimerDemo = flow<Int> {
+    val countDownTimerDemo = flow {
         val startingValue = 10
         var currentValue = startingValue
         while (currentValue > 0) {
@@ -47,10 +47,6 @@ class MainViewModel(
     }
 
 
-    /*
-    Current understanding : the methods/function that is going to update the value of the flow,
-    should not be private since they will be accessed by the UI layer/screens/UI elements
-    */
     fun updateCount() {
 
         //one of the way to update the value of flow
@@ -72,7 +68,7 @@ class MainViewModel(
     private val _data = MutableStateFlow<List<Post>>(emptyList())
     val data: StateFlow<List<Post>> = _data.asStateFlow()
 
-    private val _error = MutableStateFlow<String?>("")
+    private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
     fun getDataFromInternet() {
@@ -103,6 +99,7 @@ class MainViewModel(
                 when(it) {
                     is Result.Success -> {
                         _data.value = it.data
+                        _error.value = null
                     }
                     is Result.Error -> {
                         _error.value = it.exception.message
@@ -116,8 +113,17 @@ class MainViewModel(
     }
 
 
-    private val _postData = MutableStateFlow<Post>(Post(0, "", 0))
-    val postData: StateFlow<Post> = _postData.asStateFlow()
+    /**
+     *  Best Practices from google docs :
+     *  1. The ViewModel should create coroutines
+     *  2. Don't expose mutable types
+     *  3. The data and business layer should expose suspend functions and Flows
+     *  4. Creating coroutines in the business and data layer
+     *  5. Inject Dispatchers
+     */
+
+    private val _postData = MutableStateFlow<Post?>(null)
+    val postData: StateFlow<Post?> = _postData.asStateFlow()
 
     fun getSpecificPost() {
         viewModelScope.launch {
