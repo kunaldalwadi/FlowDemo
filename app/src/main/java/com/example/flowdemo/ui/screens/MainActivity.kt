@@ -2,6 +2,7 @@ package com.example.flowdemo.ui.screens
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -155,6 +156,13 @@ fun Greeting(
                 }
             ) {
                 Text(text = "getPost()")
+            }
+            Button(
+                onClick = {
+                    mainViewModel.getSpecificPostAsResult()
+                }
+            ) {
+                Text(text = "getPost() .asResult()")
             }
         }
     }

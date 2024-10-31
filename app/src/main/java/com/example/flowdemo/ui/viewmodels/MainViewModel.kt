@@ -1,6 +1,7 @@
 package com.example.flowdemo.ui.viewmodels
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flowdemo.data.Post
@@ -134,6 +135,26 @@ class MainViewModel(
                 .collect {
                     _postData.value = it
                 }
+        }
+    }
+
+    fun getSpecificPostAsResult() {
+        viewModelScope.launch {
+            dataRepository.getPostAsResult().collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        _postData.value = result.data
+                        _showProgress.value = false
+                    }
+                    is Result.Error -> {
+                        Log.d(TAG, "getSpecificPostAsResult: Exception : " + result.exception.message)
+                        _showProgress.value = false
+                    }
+                    is Result.Loading -> {
+                        _showProgress.value = true
+                    }
+                }
+            }
         }
     }
 }
