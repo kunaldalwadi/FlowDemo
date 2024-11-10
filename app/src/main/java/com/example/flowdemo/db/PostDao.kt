@@ -3,6 +3,7 @@ package com.example.flowdemo.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.flowdemo.data.Post
 import kotlinx.coroutines.flow.Flow
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PostDao {
     // Simply, add suspend keyword to the function, to make it work with coroutines.
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(post: Post)
 
     // No need to add suspend keyword, because it returns Flow, flows already uses coroutines.

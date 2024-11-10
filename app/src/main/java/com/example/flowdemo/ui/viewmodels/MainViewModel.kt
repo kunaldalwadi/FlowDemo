@@ -177,7 +177,7 @@ class MainViewModel(
     val favoritePosts = _favoritePosts.asStateFlow()
 
     init {
-        addDataToDatabase()
+        addDataToDatabase(dataRepository)
     }
 
 
@@ -225,10 +225,7 @@ class MainViewModel(
     /**
      * Adding data for testing.
      */
-    private fun addDataToDatabase(
-    ) {
-        val roomDB = DemoApplication.roomDB
-        val postDao = roomDB.getPostDao()
+    private fun addDataToDatabase(dataRepository: DataRepository) {
 
         val postlist = listOf<Post>(
             Post(id = 1, title = "title1", userId = 1),
@@ -245,7 +242,7 @@ class MainViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             for (post in postlist) {
-                postDao.insert(post)
+                dataRepository.addPost(post)
             }
         }
     }
