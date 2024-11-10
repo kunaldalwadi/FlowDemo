@@ -1,6 +1,7 @@
 package com.example.flowdemo.repository
 
 import com.example.flowdemo.data.Post
+import com.example.flowdemo.db.PostDao
 import com.example.flowdemo.network.ApiClient
 import com.example.flowdemo.network.Result
 import kotlinx.coroutines.CoroutineDispatcher
@@ -13,20 +14,13 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
 class DataRepository(
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val postDao: PostDao
 ) {
 
-    fun makeLoginCall() {
-    }
-
-    fun makeSignupCall() {
-    }
-
-    fun makeForgotPasswordCall() {
-    }
-
-    fun makeLogoutCall() {
-    }
+    fun getAllPosts() = postDao.getAll()
+    suspend fun addPost(post: Post) = postDao.insert(post)
+    suspend fun removePost(post : Post) = postDao.delete(post)
 
     /**
      * This function wraps the service response into Result object.

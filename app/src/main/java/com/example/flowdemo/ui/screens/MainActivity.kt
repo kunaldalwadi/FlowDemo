@@ -1,8 +1,6 @@
 package com.example.flowdemo.ui.screens
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -32,7 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.flowdemo.DemoApplication
 import com.example.flowdemo.data.Post
+import com.example.flowdemo.db.PostDao
 import com.example.flowdemo.repository.DataRepository
 import com.example.flowdemo.ui.theme.FlowDemoTheme
 import com.example.flowdemo.ui.viewmodels.MainViewModel
@@ -45,13 +45,19 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
+    private var postDao: PostDao = DemoApplication.roomDB.getPostDao()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
 
-            mainViewModelFactory = MainViewModelFactory(DataRepository(Dispatchers.IO))
+            mainViewModelFactory = MainViewModelFactory(
+                DataRepository(
+                    ioDispatcher = Dispatchers.IO,
+                    postDao = postDao
+                )
+            )
             mainViewModel =
                 ViewModelProvider(this, mainViewModelFactory).get(MainViewModel::class.java)
 
@@ -88,12 +94,16 @@ fun Greeting(
             Button(
                 onClick = {
 //                    mainViewModel.getDataFromInternet()
-                    mainViewModel.getDataFlowFromInternet()
+//                    mainViewModel.getDataFlowFromInternet()
+                    mainViewModel.getFavoritePosts()
                 }
             ) {
-                Text(text = "getDataFromInternet()")
+//                Text(text = "getDataFromInternet()")
+//                Text(text = "getDataFlowFromInternet()")
+                Text(text = "getFavoritePostsFromDatabase()")
             }
-            val postsList = mainViewModel.data.collectAsState().value
+//            val postsList = mainViewModel.data.collectAsState().value
+            val postsList = mainViewModel.favoritePosts.collectAsState().value
             val error = mainViewModel.error.collectAsState().value
 
             if (error == null && postsList.isNotEmpty()) {
@@ -192,8 +202,9 @@ fun PostListItemView(
 @Preview(showSystemUi = true)
 @Composable
 fun GreetingPreview() {
-    Greeting(
-        name = "Android",
-        mainViewModel = MainViewModel(DataRepository(Dispatchers.IO))
-    )
+//    lateinit var postDao: PostDao
+//    Greeting(
+//        name = "Android",
+//        mainViewModel = MainViewModel(DataRepository(Dispatchers.IO, postDao))
+//    )
 }

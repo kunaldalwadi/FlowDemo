@@ -1,9 +1,9 @@
 package com.example.flowdemo.ui.viewmodels
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flowdemo.DemoApplication
 import com.example.flowdemo.data.Post
 import com.example.flowdemo.network.Result
 import com.example.flowdemo.repository.DataRepository
@@ -25,9 +25,10 @@ class MainViewModel(
     private val TAG = MainViewModel::class.java.simpleName
 
 
-    //when you create a flow using StateFlow,
-    //you will have to give an initial value right here,
-    //and then you dont need to give an initial value while calling it in MainActivity.
+    /** when you create a flow using StateFlow,
+     * you will have to give an initial value right here,
+     * and then you don't need to give an initial value while calling it in MainActivity.
+     */
     private val _count = MutableStateFlow(20)
     val count: StateFlow<Int> = _count.asStateFlow()
 
@@ -84,9 +85,11 @@ class MainViewModel(
                 is Result.Success -> {
                     _data.value = result.data
                 }
+
                 is Result.Error -> {
                     _error.value = result.exception.message
                 }
+
                 is Result.Loading -> {
                     _showProgress.value = true
                 }
@@ -97,14 +100,16 @@ class MainViewModel(
     fun getDataFlowFromInternet() {
         viewModelScope.launch {
             dataRepository.getDataFlow().collect {
-                when(it) {
+                when (it) {
                     is Result.Success -> {
                         _data.value = it.data
                         _error.value = null
                     }
+
                     is Result.Error -> {
                         _error.value = it.exception.message
                     }
+
                     is Result.Loading -> {
                         _showProgress.value = true
                     }
@@ -146,10 +151,15 @@ class MainViewModel(
                         _postData.value = result.data
                         _showProgress.value = false
                     }
+
                     is Result.Error -> {
-                        Log.d(TAG, "getSpecificPostAsResult: Exception : " + result.exception.message)
+                        Log.d(
+                            TAG,
+                            "getSpecificPostAsResult: Exception : " + result.exception.message
+                        )
                         _showProgress.value = false
                     }
+
                     is Result.Loading -> {
                         _showProgress.value = true
                     }
@@ -157,4 +167,89 @@ class MainViewModel(
             }
         }
     }
+
+//=============================================  Database region  ================================================================
+
+    // This is a mutable state flow that will be used internally in the viewmodel, empty list is given as initial value.
+    private val _favoritePosts = MutableStateFlow<List<Post>>(emptyList())
+
+    //Immutable state flow that you expose to your UI
+    val favoritePosts = _favoritePosts.asStateFlow()
+
+    init {
+        addDataToDatabase()
+    }
+
+
+    /**
+     * This function is used to get all the books from the database, and update the value of favoriteBooks.
+     * 1. viewModelScope.launch is used to launch a coroutine within the viewModel lifecycle.
+     * 2. repository.getAll() is used to get all the books from the database.
+     * 3. flowOn(Dispatchers.IO) is used to change the dispatcher of the flow to IO, which is optimal for IO operations, and does not block the main thread.
+     * 4. collect is a suspending function used to collect the flow of books list, and assign the value to favoriteBooks.
+     * 5. each time the flow emits a new value, the collect function will be called with the list of books.
+     */
+    fun getFavoritePosts() {
+        viewModelScope.launch { //this: CoroutineScope
+            dataRepository.getAllPosts().flowOn(Dispatchers.IO).collect { posts: List<Post> ->
+                _favoritePosts.update { posts }
+            }
+        }
+    }
+
+    /**
+     * This function is used to add a book to the database.
+     * 1. viewModelScope.launch is used to launch a coroutine within the viewModel lifecycle.
+     * 2. Dispatchers.IO is used to change the dispatcher of the coroutine to IO, which is optimal for IO operations, and does not block the main thread.
+     * 3. repository.add(book) is used to add the book to the database.
+     */
+    fun addPost(post: Post) {
+        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
+            dataRepository.addPost(post)
+        }
+    }
+
+    /**
+     * This function is used to remove a book from the database.
+     * 1. viewModelScope.launch is used to launch a coroutine within the viewModel lifecycle.
+     * 2. Dispatchers.IO is used to change the dispatcher of the coroutine to IO, which is optimal for IO operations, and does not block the main thread.
+     * 3. repository.remove(book) is used to remove the book from the database.
+     */
+    fun removePost(post: Post) {
+        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
+            dataRepository.removePost(post)
+        }
+    }
+
+
+    /**
+     * Adding data for testing.
+     */
+    private fun addDataToDatabase(
+    ) {
+        val roomDB = DemoApplication.roomDB
+        val postDao = roomDB.getPostDao()
+
+        val postlist = listOf<Post>(
+            Post(id = 1, title = "title1", userId = 1),
+            Post(id = 2, title = "title2", userId = 2),
+            Post(id = 3, title = "title3", userId = 3),
+            Post(id = 4, title = "title4", userId = 4),
+            Post(id = 5, title = "title5", userId = 5),
+            Post(id = 6, title = "title6", userId = 6),
+            Post(id = 7, title = "title7", userId = 7),
+            Post(id = 8, title = "title8", userId = 8),
+            Post(id = 9, title = "title9", userId = 9),
+            Post(id = 10, title = "title10", userId = 10)
+        )
+
+        viewModelScope.launch(Dispatchers.IO) {
+            for (post in postlist) {
+                postDao.insert(post)
+            }
+        }
+    }
+
+//=============================================  region end  ================================================================
+
 }
