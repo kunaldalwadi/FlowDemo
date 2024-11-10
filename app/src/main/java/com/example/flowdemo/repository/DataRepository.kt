@@ -2,7 +2,7 @@ package com.example.flowdemo.repository
 
 import com.example.flowdemo.data.Post
 import com.example.flowdemo.db.PostDao
-import com.example.flowdemo.network.ApiClient
+import com.example.flowdemo.network.ApiService
 import com.example.flowdemo.network.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,8 @@ import javax.inject.Singleton
 
 @Singleton
 class DataRepository @Inject constructor(
-    private val postDao: PostDao
+    private val postDao: PostDao,
+    private val apiService: ApiService
 ) {
 
     fun getAllPosts() = postDao.getAll()
@@ -28,7 +29,7 @@ class DataRepository @Inject constructor(
      */
     suspend fun makeServiceCall(): Result<List<Post>> {
         return withContext(Dispatchers.IO) {
-            Result.Success(ApiClient.apiService.getPosts())
+            Result.Success(apiService.getPosts())
         }
     }
 
@@ -40,7 +41,7 @@ class DataRepository @Inject constructor(
         return withContext(Dispatchers.IO) {
             flow {
                 try {
-                    emit(Result.Success(ApiClient.apiService.getPosts()))
+                    emit(Result.Success(apiService.getPosts()))
                 } catch (e: Exception) {
                     emit(Result.Error(Exception("Network was not really responding !! -> " + e.message)))
                 }
@@ -61,7 +62,7 @@ class DataRepository @Inject constructor(
     suspend fun getPost2(): Flow<Post> {
         return withContext(Dispatchers.IO) {
             flow {
-                emit(ApiClient.apiService.getPost2())
+                emit(apiService.getPost2())
             }
         }
     }
@@ -72,7 +73,7 @@ class DataRepository @Inject constructor(
     suspend fun getPostAsResult(): Flow<Result<Post>> {
         return withContext(Dispatchers.IO) {
             flow {
-                emit(ApiClient.apiService.getPost2())
+                emit(apiService.getPost2())
             }.asResult()
         }
     }
