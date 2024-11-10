@@ -4,7 +4,6 @@ import com.example.flowdemo.data.Post
 import com.example.flowdemo.db.PostDao
 import com.example.flowdemo.network.ApiClient
 import com.example.flowdemo.network.Result
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -12,9 +11,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class DataRepository(
-    private val ioDispatcher: CoroutineDispatcher,
+@Singleton
+class DataRepository @Inject constructor(
     private val postDao: PostDao
 ) {
 
@@ -41,7 +42,7 @@ class DataRepository(
                 try {
                     emit(Result.Success(ApiClient.apiService.getPosts()))
                 } catch (e: Exception) {
-                    emit(Result.Error(Exception("Network was not really responding !!")))
+                    emit(Result.Error(Exception("Network was not really responding !! -> " + e.message)))
                 }
             }
         }
@@ -58,7 +59,7 @@ class DataRepository(
      * This function wraps the service response into flow and emits it
      */
     suspend fun getPost2(): Flow<Post> {
-        return withContext(ioDispatcher) {
+        return withContext(Dispatchers.IO) {
             flow {
                 emit(ApiClient.apiService.getPost2())
             }
@@ -69,7 +70,7 @@ class DataRepository(
      * This uses the below extension function to wrap the data received from the service call into Result object
      */
     suspend fun getPostAsResult(): Flow<Result<Post>> {
-        return withContext(ioDispatcher) {
+        return withContext(Dispatchers.IO) {
             flow {
                 emit(ApiClient.apiService.getPost2())
             }.asResult()

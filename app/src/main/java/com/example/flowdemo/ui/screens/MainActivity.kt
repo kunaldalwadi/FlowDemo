@@ -28,39 +28,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.flowdemo.DemoApplication
 import com.example.flowdemo.data.Post
-import com.example.flowdemo.db.PostDao
-import com.example.flowdemo.repository.DataRepository
 import com.example.flowdemo.ui.theme.FlowDemoTheme
 import com.example.flowdemo.ui.viewmodels.MainViewModel
-import com.example.flowdemo.ui.viewmodels.MainViewModelFactory
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-private val TAG = MainActivity::class.java.simpleName
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private lateinit var mainViewModel: MainViewModel
-    private lateinit var mainViewModelFactory: MainViewModelFactory
-    private var postDao: PostDao = DemoApplication.roomDB.getPostDao()
+    @Inject
+    lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-            mainViewModelFactory = MainViewModelFactory(
-                DataRepository(
-                    ioDispatcher = Dispatchers.IO,
-                    postDao = postDao
-                )
-            )
-            mainViewModel =
-                ViewModelProvider(this, mainViewModelFactory).get(MainViewModel::class.java)
-
             FlowDemoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
@@ -130,7 +115,7 @@ fun Greeting(
                 modifier = modifier
             )
             Text(
-                //Dont know how to use the initialValue here.
+                //Don't know how to use the initialValue here.
                 text = "Count Down Timer : ${
                     mainViewModel.countDownTimerDemo.collectAsStateWithLifecycle(
                         25
@@ -202,9 +187,7 @@ fun PostListItemView(
 @Preview(showSystemUi = true)
 @Composable
 fun GreetingPreview() {
-//    lateinit var postDao: PostDao
 //    Greeting(
-//        name = "Android",
-//        mainViewModel = MainViewModel(DataRepository(Dispatchers.IO, postDao))
+//        name = "Android"
 //    )
 }

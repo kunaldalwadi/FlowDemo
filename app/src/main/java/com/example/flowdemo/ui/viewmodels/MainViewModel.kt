@@ -3,7 +3,6 @@ package com.example.flowdemo.ui.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flowdemo.DemoApplication
 import com.example.flowdemo.data.Post
 import com.example.flowdemo.network.Result
 import com.example.flowdemo.repository.DataRepository
@@ -17,8 +16,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(
+class MainViewModel @Inject constructor(
     private val dataRepository: DataRepository
 ) : ViewModel() {
 
@@ -78,7 +78,7 @@ class MainViewModel(
             val result = try {
                 dataRepository.makeServiceCall()
             } catch (e: Exception) {
-                Result.Error(Exception("Network request failed"))
+                Result.Error(Exception("Network request failed -> " + e.message))
             }
             Log.d(TAG, "getDataFromInternet: result : " + result.toString())
             when (result) {

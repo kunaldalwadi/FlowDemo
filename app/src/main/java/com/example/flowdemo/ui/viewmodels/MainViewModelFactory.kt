@@ -3,8 +3,10 @@ package com.example.flowdemo.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.flowdemo.repository.DataRepository
+import javax.inject.Inject
 
-class MainViewModelFactory(
+
+class MainViewModelFactory @Inject constructor(
     private val dataRepository: DataRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
